@@ -11,7 +11,7 @@ class DashboardController extends Controller
         $data = file_get_contents("https://deskplan.lv/muita/app.json");
         $json = json_decode($data, true);
 
-        return view('dashboard', [
+        return view('welcome', [
             'cases' => $json['cases'],
             'vehicles' => $json['vehicles'],
             'users' => $json['users'],
