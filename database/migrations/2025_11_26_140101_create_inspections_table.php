@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('inspections', function (Blueprint $table) {
-            $table->string('id');
+            $table->string('id')->primary();
             $table->string('case_id');
-            $table->string('type');
-            $table->string('requested_by');
-            $table->datetime('start_ts');
-            $table->string('location');
-            $table->json('checks');
+            $table->string('type')->nullable();
+            $table->string('requested_by')->nullable();
+            $table->datetime('start_ts')->nullable();
+            $table->string('location')->nullable();
+            $table->json('checks')->nullable();
+            $table->string('assigned_to')->nullable();
             $table->timestamps();
         });
     }

@@ -12,15 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cases', function (Blueprint $table) {
-            $table->string('id');
-            $table->string('external_ref');
-            $table->string('status');
-            $table->string('priority');
-            $table->string('arrival_ts');
-            $table->string('checkpoint_id');
-            $table->string('origin_country');
-            $table->string('destination_country');
-            $table->json('risk_flags');
+            $table->string('id')->primary();
+            $table->string('external_ref')->nullable();
+            $table->string('status')->nullable();
+            $table->string('priority')->nullable();
+            $table->string('arrival_ts')->nullable();
+            $table->string('checkpoint_id')->nullable();
+            $table->string('origin_country')->nullable();
+            $table->string('destination_country')->nullable();
+            $table->json('risk_flags')->nullable();
+            $table->string('declarant_id')->nullable();
+            $table->string('consignee_id')->nullable();
+            $table->string('vehicle_id')->nullable();
             $table->timestamps();
         });
     }

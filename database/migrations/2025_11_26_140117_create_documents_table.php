@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('documents', function (Blueprint $table) {
-            $table->string('id');
+            $table->string('id')->primary();
             $table->string('case_id');
-            $table->string('filename');
-            $table->string('mime_type');
-            $table->string('category');
-            $table->integer('pages');
-            $table->string('uploaded_by');//foreighn id jo sasaistīts ar users tabulu
+            $table->string('filename')->nullable();
+            $table->string('mime_type')->nullable();
+            $table->string('category')->nullable();
+            $table->integer('pages')->nullable();
+            $table->string('uploaded_by')->nullable();//foreighn id jo sasaistīts ar users tabulu
             $table->timestamps();
         });
     }

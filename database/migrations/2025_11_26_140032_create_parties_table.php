@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('parties', function (Blueprint $table) {
-            $table->string('id');
-            $table->string('type');
-            $table->string('name');
-            $table->integer('reg_code');
-            $table->string('vat');
-            $table->string('country');
-            $table->string('email');
-            $table->integer('phone');
+            $table->string('id')->primary();
+            $table->string('type')->nullable();
+            $table->string('name')->nullable();
+            $table->string('reg_code')->nullable();
+            $table->string('vat')->nullable();
+            $table->string('country')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
             $table->timestamps();
         });
     }

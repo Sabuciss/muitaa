@@ -12,7 +12,7 @@ class DashboardController extends Controller
         $data = file_get_contents('https://deskplan.lv/muita/app.json');
         $json = json_decode($data, true);
 
-        // Droši izvelkam masīvus, pat ja kāds nav
+        //  izvelkam masīvus, pat ja kāds nav
         $cases= $json['cases'] ?? [];
         $vehicles= $json['vehicles'] ?? [];
         $users = $json['users'] ?? [];
@@ -25,6 +25,45 @@ class DashboardController extends Controller
         $selectedVehicleId = request('vehicle');
         $selectedCaseId    = request('case');
         $selectedUserId    = request('user');
+        // Apply filters to inspections server-side so the view shows matching items only.
+        $inspections = array_filter($inspections, function ($i) use ($selectedCaseId, $selectedUserId, $selectedVehicleId, $cases) {
+            // Filter by case id
+            if (!empty($selectedCaseId) && (!isset($i['case_id']) || $i['case_id'] !== $selectedCaseId)) {
+                return false;
+            }
+
+            // Filter by user who requested the inspection
+            if (!empty($selectedUserId) && (!isset($i['requested_by']) || $i['requested_by'] !== $selectedUserId)) {
+                return false;
+            }
+
+            // Filter by vehicle: lookup the case and compare its vehicle_id (if present)
+            if (!empty($selectedVehicleId)) {
+                $caseId = $i['case_id'] ?? null;
+                if (!$caseId) {
+                    return false;
+                }
+
+                // find the case in $cases array
+                $matchingCase = null;
+                foreach ($cases as $c) {
+                    if (isset($c['id']) && $c['id'] === $caseId) {
+                        $matchingCase = $c;
+                        break;
+                    }
+                }
+
+                // If case not found or it doesn't have a vehicle_id, treat as non-matching
+                if (!$matchingCase || !isset($matchingCase['vehicle_id']) || $matchingCase['vehicle_id'] !== $selectedVehicleId) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        // Re-index filtered inspections for predictable iteration in the view
+        $inspections = array_values($inspections);
 
         return view('welcome', [
             'cases' => $cases,

@@ -5,20 +5,56 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Cases extends Model {
+    /**
+     * Primary key is a string `id` (not auto-incrementing).
+     */
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    /**
+     * Mass assignable attributes.
+     */
+    protected $fillable = [
+        'id',
+        'external_ref',
+        'status',
+        'priority',
+        'arrival_ts',
+        'checkpoint_id',
+        'origin_country',
+        'destination_country',
+        'risk_flags',
+        'declarant_id',
+        'consignee_id',
+        'vehicle_id',
+    ];
+
+    /**
+     * Cast JSON fields to native types.
+     */
+    protected $casts = [
+        'risk_flags' => 'array',
+    ];
+
     public function vehicle() {
-        return $this->belongsTo(Vehicle::class, 'vehicle_id');
+        return $this->belongsTo(Vehicles::class, 'vehicle_id');
     }
+
     public function inspections() {
-        return $this->hasMany(Inspection::class, 'case_id');
+        return $this->hasMany(Inspections::class, 'case_id');
     }
+
     public function documents() {
-        return $this->hasMany(Document::class, 'case_id');
+        return $this->hasMany(Documents::class, 'case_id');
     }
+
     public function declarant() {
-        return $this->belongsTo(Party::class, 'declarant_id');
+        return $this->belongsTo(Parties::class, 'declarant_id');
     }
+
     public function consignee() {
-        return $this->belongsTo(Party::class, 'consignee_id');
+        return $this->belongsTo(Parties::class, 'consignee_id');
     }
 }
 
