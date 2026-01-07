@@ -26,16 +26,13 @@ class InspectionsSeeder extends Seeder
             if (!isset($item['id'])) continue;
             $attrs = $item;
             $attrs['id'] = (string) $item['id'];
-            // Convert checks array to JSON if it's an array
             if (isset($attrs['checks']) && is_array($attrs['checks'])) {
                 $attrs['checks'] = json_encode($attrs['checks']);
             }
-            // Convert ISO 8601 datetime to MySQL format
             if (isset($attrs['start_ts']) && is_string($attrs['start_ts'])) {
                 try {
                     $attrs['start_ts'] = Carbon::parse($attrs['start_ts'])->format('Y-m-d H:i:s');
                 } catch (\Exception $e) {
-                    // If parsing fails, set to null
                     $attrs['start_ts'] = null;
                 }
             }

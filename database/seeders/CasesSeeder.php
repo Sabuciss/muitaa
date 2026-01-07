@@ -25,7 +25,6 @@ class CasesSeeder extends Seeder
             if (!isset($item['id'])) continue;
             $attrs = $item;
             $attrs['id'] = (string) $item['id'];
-            // Convert risk_flags array to JSON string if it's an array
             if (isset($attrs['risk_flags']) && is_array($attrs['risk_flags'])) {
                 $attrs['risk_flags'] = json_encode($attrs['risk_flags']);
             }

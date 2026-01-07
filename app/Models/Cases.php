@@ -5,16 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Cases extends Model {
-    /**
-     * Primary key is a string `id` (not auto-incrementing).
-     */
+   
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
-    /**
-     * Mass assignable attributes.
-     */
+   
     protected $fillable = [
         'id',
         'external_ref',
@@ -30,9 +26,7 @@ class Cases extends Model {
         'vehicle_id',
     ];
 
-    /**
-     * Cast JSON fields to native types.
-     */
+
     protected $casts = [
         'risk_flags' => 'array',
     ];

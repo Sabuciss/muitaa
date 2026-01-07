@@ -1,6 +1,17 @@
 <x-app-layout>
     <div class="min-h-screen bg-gray-100 p-6 space-y-6">
 
+        @auth
+            <div class="bg-white rounded shadow p-3 flex items-center justify-between">
+                <div>
+                    <div class="text-xs text-gray-500">Logged in as</div>
+                    <div class="text-lg font-semibold">{{ auth()->user()->full_name ?? auth()->user()->name ?? auth()->user()->username }}</div>
+                    <div class="text-sm text-gray-600">Role: {{ auth()->user()->role ?? '-' }}</div>
+                </div>
+                <div class="text-sm text-gray-500">ID: {{ auth()->id() }}</div>
+            </div>
+        @endauth
+
         <!-- Kopējie kopsavilkumi -->
         @if($totals)
             <div class="bg-white rounded shadow p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4  flex flex-row-reverse">

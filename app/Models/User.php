@@ -27,6 +27,9 @@ class User extends Authenticatable
             'id',
             'username',
             'full_name',
+            'name',
+            'email',
+            'password',
             'role',
             'active',
         ];
@@ -36,7 +39,10 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $hidden = [];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     /**
      * Attribute casts.
@@ -47,6 +53,7 @@ class User extends Authenticatable
         'active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'email_verified_at' => 'datetime',
     ];
 
     public function uploadedDocuments()
@@ -57,5 +64,33 @@ class User extends Authenticatable
     public function requestedInspections()
     {
         return $this->hasMany(Inspections::class, 'requested_by');
+    }
+
+    public function hasRole($roles): bool
+    {
+        if (is_array($roles)) {
+            return in_array($this->role, $roles, true);
+        }
+        return $this->role === $roles;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isInspector(): bool
+    {
+        return $this->role === 'inspector';
+    }
+
+    public function isAnalyst(): bool
+    {
+        return $this->role === 'analyst';
+    }
+
+    public function isBroker(): bool
+    {
+        return $this->role === 'broker';
     }
 }

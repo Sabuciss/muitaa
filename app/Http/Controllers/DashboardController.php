@@ -3,6 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Vehicles;
+use App\Models\Cases;
+use App\Models\Inspections;
+use App\Models\Documents;
+use App\Models\Parties;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -21,30 +28,28 @@ class DashboardController extends Controller
         $parties= $json['parties'] ?? [];
         $totals = $json['total'] ?? null; // ja API satur total objektu
 
-        // Lai var filtrēt pēc request parametriem (piemēram, ?vehicle=veh-000001)
+        // Lai var filtrēt pēc request parametriem
         $selectedVehicleId = request('vehicle');
         $selectedCaseId    = request('case');
         $selectedUserId    = request('user');
-        // Apply filters to inspections server-side so the view shows matching items only.
         $inspections = array_filter($inspections, function ($i) use ($selectedCaseId, $selectedUserId, $selectedVehicleId, $cases) {
-            // Filter by case id
+            // Filtrs pēc id
             if (!empty($selectedCaseId) && (!isset($i['case_id']) || $i['case_id'] !== $selectedCaseId)) {
                 return false;
             }
 
-            // Filter by user who requested the inspection
+            // filrs pēc lietotāja, kas pieprasīja inspekciju
             if (!empty($selectedUserId) && (!isset($i['requested_by']) || $i['requested_by'] !== $selectedUserId)) {
                 return false;
             }
 
-            // Filter by vehicle: lookup the case and compare its vehicle_id (if present)
+            //    filtrs pēc vehicels 
             if (!empty($selectedVehicleId)) {
                 $caseId = $i['case_id'] ?? null;
                 if (!$caseId) {
                     return false;
                 }
 
-                // find the case in $cases array
                 $matchingCase = null;
                 foreach ($cases as $c) {
                     if (isset($c['id']) && $c['id'] === $caseId) {
@@ -53,7 +58,6 @@ class DashboardController extends Controller
                     }
                 }
 
-                // If case not found or it doesn't have a vehicle_id, treat as non-matching
                 if (!$matchingCase || !isset($matchingCase['vehicle_id']) || $matchingCase['vehicle_id'] !== $selectedVehicleId) {
                     return false;
                 }
@@ -62,7 +66,6 @@ class DashboardController extends Controller
             return true;
         });
 
-        // Re-index filtered inspections for predictable iteration in the view
         $inspections = array_values($inspections);
 
         return view('welcome', [
@@ -77,5 +80,64 @@ class DashboardController extends Controller
             'selectedCaseId'=> $selectedCaseId,
             'selectedUserId'=> $selectedUserId,
         ]);
+    }
+
+    /**
+     * Return a JSON dump of main database tables (authenticated users only).
+     */
+    public function dumpDb()
+    {
+        $data = [
+            'users' => User::all(),
+            'vehicles' => Vehicles::all(),
+            'cases' => Cases::all(),
+            'inspections' => Inspections::all(),
+            'documents' => Documents::all(),
+            'parties' => Parties::all(),
+        ];
+
+        return response()->json($data);
+    }
+
+    /**
+     * Import data from the remote JSON into local database tables (upsert by id).
+     * Protected route should be admin-only in routes.
+     */
+    public function importDb()
+    {
+        $source = 'https://deskplan.lv/muita/app.json';
+        $raw = @file_get_contents($source);
+        if (!$raw) {
+            return redirect()->route('dashboard')->with('error', 'Could not fetch remote data');
+        }
+
+        $json = json_decode($raw, true);
+        if (!is_array($json)) {
+            return redirect()->route('dashboard')->with('error', 'Invalid JSON from source');
+        }
+
+        $map = [
+            'users' => User::class,
+            'vehicles' => Vehicles::class,
+            'cases' => Cases::class,
+            'inspections' => Inspections::class,
+            'documents' => Documents::class,
+            'parties' => Parties::class,
+        ];
+
+        DB::transaction(function () use ($json, $map) {
+            foreach ($map as $key => $model) {
+                $items = $json[$key] ?? [];
+                foreach ($items as $item) {
+                    if (empty($item['id'])) {
+                        continue;
+                    }
+                    $attributes = $item;
+                    $model::updateOrCreate(['id' => $item['id']], $attributes);
+                }
+            }
+        });
+
+        return redirect()->route('dashboard')->with('status', 'Import completed');
     }
 }

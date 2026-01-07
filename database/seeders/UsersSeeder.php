@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UsersSeeder extends Seeder
 {
@@ -29,5 +30,17 @@ class UsersSeeder extends Seeder
             $count++;
         }
         $this->command->info("Users seeded: {$count}");
+
+        // Ensure primary system users exist (password = username, email = username@gmail.com)
+        $main = [
+            ['id' => 'admin', 'username' => 'admin', 'full_name' => 'Admin', 'name' => 'Admin', 'email' => 'admin@gmail.com', 'password' => Hash::make('admin'), 'role' => 'admin', 'active' => true, 'email_verified_at' => now()],
+            ['id' => 'inspector', 'username' => 'inspector', 'full_name' => 'Inspector', 'name' => 'Inspector', 'email' => 'inspector@gmail.com', 'password' => Hash::make('inspector'), 'role' => 'inspector', 'active' => true, 'email_verified_at' => now()],
+            ['id' => 'analyst', 'username' => 'analyst', 'full_name' => 'Analyst', 'name' => 'Analyst', 'email' => 'analyst@gmail.com', 'password' => Hash::make('analyst'), 'role' => 'analyst', 'active' => true, 'email_verified_at' => now()],
+            ['id' => 'broker', 'username' => 'broker', 'full_name' => 'Broker', 'name' => 'Broker', 'email' => 'broker@gmail.com', 'password' => Hash::make('broker'), 'role' => 'broker', 'active' => true, 'email_verified_at' => now()],
+        ];
+
+        foreach ($main as $m) {
+            DB::table('users')->updateOrInsert(['id' => $m['id']], $m);
+        }
     }
 }
