@@ -90,8 +90,6 @@
 
 function applyFilters() {
     const vehicle = document.getElementById('filter-vehicle').value.toLowerCase();
-    const hscode = document.getElementById('filter-hscode').value.toLowerCase();
-    const party = document.getElementById('filter-party').value.toLowerCase();
     const status = document.getElementById('filter-status').value.toLowerCase();
     const priority = document.getElementById('filter-priority').value.toLowerCase();
     const origin = document.getElementById('filter-origin').value.toLowerCase();
@@ -100,29 +98,23 @@ function applyFilters() {
     const rows = document.querySelectorAll('#cases-table tbody tr');
     rows.forEach(row => {
         const vehicleId = row.cells[1]?.textContent.toLowerCase() || '';
-        const hsCodeText = row.cells[2]?.textContent.toLowerCase() || '';
-        const partyText = row.cells[3]?.textContent.toLowerCase() || '';
-        const rowStatus = row.cells[4]?.textContent.toLowerCase() || '';
-        const rowPriority = row.cells[5]?.textContent.toLowerCase() || '';
-        const rowOrigin = row.cells[6]?.textContent.toLowerCase() || '';
-        const rowDestination = row.cells[7]?.textContent.toLowerCase() || '';
+        const rowStatus = row.cells[2]?.textContent.toLowerCase() || '';
+        const rowPriority = row.cells[3]?.textContent.toLowerCase() || '';
+        const rowOrigin = row.cells[4]?.textContent.toLowerCase() || '';
+        const rowDestination = row.cells[5]?.textContent.toLowerCase() || '';
   
         const vehicleMatch = !vehicle || vehicleId.includes(vehicle);
         const statusMatch = !status || rowStatus.includes(status);
         const priorityMatch = !priority || rowPriority.includes(priority);
         const originMatch = !origin || rowOrigin.includes(origin);
         const destinationMatch = !destination || rowDestination.includes(destination);
-        const hscodeMatch = !hscode || hsCodeText.includes(hscode);
-        const partyMatch = !party || partyText.includes(party);
 
-        row.style.display = (vehicleMatch && statusMatch && priorityMatch && originMatch && destinationMatch && hscodeMatch && partyMatch) ? '' : 'none';
+        row.style.display = (vehicleMatch && statusMatch && priorityMatch && originMatch && destinationMatch) ? '' : 'none';
     });
 }
 
 function clearFilters() {
     document.getElementById('filter-vehicle').value = '';
-    document.getElementById('filter-hscode').value = '';
-    document.getElementById('filter-party').value = '';
     document.getElementById('filter-status').value = '';
     document.getElementById('filter-priority').value = '';
     document.getElementById('filter-origin').value = '';
@@ -132,32 +124,172 @@ function clearFilters() {
     rows.forEach(row => row.style.display = '');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const preferenceButtons = document.querySelectorAll('button[data-preference]');
+function applyDocumentFilters() {
+    const filename = document.getElementById('filter-doc-filename').value.toLowerCase();
+    const category = document.getElementById('filter-doc-category').value.toLowerCase();
     
-    preferenceButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const preference = this.getAttribute('data-preference');
+    const rows = document.querySelectorAll('#documents-table tbody tr');
+    rows.forEach(row => {
+        const rowFilename = row.cells[2]?.textContent.toLowerCase() || '';
+        const rowCategory = row.cells[3]?.textContent.toLowerCase() || '';
+        
+        const filenameMatch = !filename || rowFilename.includes(filename);
+        const categoryMatch = !category || rowCategory.includes(category);
+        
+        row.style.display = (filenameMatch && categoryMatch) ? '' : 'none';
+    });
+}
 
-            document.getElementById('section-documents-content').style.display = 'none';
-            document.getElementById('section-inspections-content').style.display = 'none';
-            document.getElementById('section-cases-content').style.display = 'none';
-            document.getElementById('section-vehicles-content').style.display = 'none';
+function clearDocumentFilters() {
+    document.getElementById('filter-doc-filename').value = '';
+    document.getElementById('filter-doc-category').value = '';
+    
+    const rows = document.querySelectorAll('#documents-table tbody tr');
+    rows.forEach(row => row.style.display = '');
+}
+
+function applyVehicleFilters() {
+    const plate = document.getElementById('filter-veh-plate').value.toLowerCase();
+    const make = document.getElementById('filter-veh-make').value.toLowerCase();
+    const country = document.getElementById('filter-veh-country').value.toLowerCase();
+    
+    const rows = document.querySelectorAll('#vehicles-table tbody tr');
+    rows.forEach(row => {
+        const rowPlate = row.cells[1]?.textContent.toLowerCase() || '';
+        const rowMake = row.cells[3]?.textContent.toLowerCase() || '';
+        const rowCountry = row.cells[2]?.textContent.toLowerCase() || '';
+        
+        const plateMatch = !plate || rowPlate.includes(plate);
+        const makeMatch = !make || rowMake.includes(make);
+        const countryMatch = !country || rowCountry.includes(country);
+        
+        row.style.display = (plateMatch && makeMatch && countryMatch) ? '' : 'none';
+    });
+}
+
+function clearVehicleFilters() {
+    document.getElementById('filter-veh-plate').value = '';
+    document.getElementById('filter-veh-make').value = '';
+    document.getElementById('filter-veh-country').value = '';
+    
+    const rows = document.querySelectorAll('#vehicles-table tbody tr');
+    rows.forEach(row => row.style.display = '');
+}
+
+function applyPartiesFilters() {
+    const name = document.getElementById('filter-par-name').value.toLowerCase();
+    const country = document.getElementById('filter-par-country').value.toLowerCase();
+    
+    const rows = document.querySelectorAll('#parties-table tbody tr');
+    rows.forEach(row => {
+        const rowName = row.cells[1]?.textContent.toLowerCase() || '';
+        const rowCountry = row.cells[3]?.textContent.toLowerCase() || '';
+        
+        const nameMatch = !name || rowName.includes(name);
+        const countryMatch = !country || rowCountry.includes(country);
+        
+        row.style.display = (nameMatch && countryMatch) ? '' : 'none';
+    });
+}
+
+function clearPartiesFilters() {
+    document.getElementById('filter-par-name').value = '';
+    document.getElementById('filter-par-country').value = '';
+    
+    const rows = document.querySelectorAll('#parties-table tbody tr');
+    rows.forEach(row => row.style.display = '');
+}
+
+function toggleDocFilter() {
+    document.getElementById('doc-filter-panel').classList.toggle('hidden');
+}
+
+function toggleVehFilter() {
+    document.getElementById('veh-filter-panel').classList.toggle('hidden');
+}
+
+function toggleParFilter() {
+    document.getElementById('par-filter-panel').classList.toggle('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    ['filter-doc-filename', 'filter-doc-category'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', applyDocumentFilters);
+    });
+
+    ['filter-veh-plate', 'filter-veh-make', 'filter-veh-country'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', applyVehicleFilters);
+    });
+
+    ['filter-par-name', 'filter-par-country'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', applyPartiesFilters);
+    });
+
+    document.querySelectorAll('button[data-preference]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const pref = btn.getAttribute('data-preference');
+            const sections = ['documents', 'inspections', 'cases', 'vehicles'];
             
-            if (preference === 'all') {
-                document.getElementById('section-documents-content').style.display = '';
-                document.getElementById('section-inspections-content').style.display = '';
-                document.getElementById('section-cases-content').style.display = '';
-                document.getElementById('section-vehicles-content').style.display = '';
+            sections.forEach(sec => {
+                document.getElementById(`section-${sec}-content`).style.display = 'none';
+            });
+
+            if (pref === 'all') {
+                sections.forEach(sec => {
+                    document.getElementById(`section-${sec}-content`).style.display = '';
+                });
             } else {
-                const sectionId = `section-${preference}-content`;
-                const section = document.getElementById(sectionId);
-                
-                if (section) {
-                    section.style.display = '';
-                }
+                const section = document.getElementById(`section-${pref}-content`);
+                if (section) section.style.display = '';
             }
         });
+    });
+});
+document.querySelectorAll('.run-risk-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const inspectionId = this.dataset.inspectionId;
+        const url = this.dataset.url;
+        const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const button = this;
+        
+        button.disabled = true;
+        button.textContent = 'Running...';
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const riskCell = document.querySelector(`[data-inspection-id="${inspectionId}"]`);
+                if (riskCell) {
+                    riskCell.textContent = data.rating + '/5';
+                }
+                const row = button.closest('tr');
+                if (row) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 6) {
+                        cells[5].textContent = data.risk_flag;
+                    }
+                }
+                
+                button.textContent = data.rating + '/5';
+                button.style.backgroundColor = '#10b981';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            button.textContent = 'Error';
+            button.style.backgroundColor = '#ef4444';
+        }
     });
 });

@@ -32,7 +32,7 @@ class AdminController extends Controller
         return view('admin.create-user');
     }
 
-    public function storeUser(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'username' => 'required|string|unique:users|max:255',
@@ -52,13 +52,21 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'User created successfully');
     }
 
-    public function editUser(User $user)
+    public function edit($id)
     {
+        $user = User::findOrFail($id);
         return view('admin.edit-user', compact('user'));
     }
 
-    public function updateUser(Request $request, User $user)
+    public function update(Request $request, $id)
     {
+        $user = User::findOrFail($id);
+
+        if ($request->has('toggle_active')) {
+            $user->update(['active' => !$user->active]);
+            return redirect()->route('admin.users')->with('success', 'User status updated');
+        }
+
         $request->validate([
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'full_name' => 'required|string|max:255',
@@ -76,26 +84,9 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'User updated successfully');
     }
 
-    public function updateRole(Request $request, User $user)
+    public function destroy($id)
     {
-        $request->validate([
-            'role' => 'required|in:inspector,analyst,broker,admin',
-        ]);
-
-        $user->update(['role' => $request->role]);
-
-        return redirect()->route('admin.users')->with('success', 'User role updated successfully');
-    }
-
-    public function toggleActive(Request $request, User $user)
-    {
-        $user->update(['active' => !$user->active]);
-
-        return redirect()->route('admin.users')->with('success', 'User status updated');
-    }
-
-    public function delete(User $user)
-    {
+        $user = User::findOrFail($id);
         $user->delete();
 
         return redirect()->route('admin.users')->with('success', 'User deleted successfully');

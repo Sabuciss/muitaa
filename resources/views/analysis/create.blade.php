@@ -35,6 +35,7 @@
                         <option value="Low" @selected(old('risk_level') === 'Low')>Low</option>
                         <option value="Medium" @selected(old('risk_level') === 'Medium')>Medium</option>
                         <option value="High" @selected(old('risk_level') === 'High')>High</option>
+                        <option value="Very High" @selected(old('risk_level') === 'Very High')>Very High</option>
                         <option value="Critical" @selected(old('risk_level') === 'Critical')>Critical</option>
                     </select>
                     @error('risk_level')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror

@@ -5,7 +5,7 @@
 
             <form action="{{ route('inspections.update', $inspection->id) }}" method="POST">
                 @csrf
-                @method('PATCH')
+                @method('PUT')
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Case ID</label>
@@ -16,14 +16,26 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Inspection Type *</label>
                     <select name="type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm @error('type') border-red-500 @enderror" required>
-                        <option value="physical" {{ $inspection->type === 'physical' ? 'selected' : '' }}>Physical Inspection</option>
-                        <option value="document" {{ $inspection->type === 'document' ? 'selected' : '' }}>Document Review</option>
-                        <option value="scanner" {{ $inspection->type === 'scanner' ? 'selected' : '' }}>Scanner Screening</option>
-                        <option value="canine" {{ $inspection->type === 'canine' ? 'selected' : '' }}>Canine Detection</option>
-                        <option value="lab" {{ $inspection->type === 'lab' ? 'selected' : '' }}>Laboratory Analysis</option>
-                        <option value="other" {{ $inspection->type === 'other' ? 'selected' : '' }}>Other</option>
+                        <option value="dokumentu" {{ $inspection->type === 'dokumentu' ? 'selected' : '' }}>Document</option>
+                        <option value="fiziska" {{ $inspection->type === 'fiziska' ? 'selected' : '' }}>Physical</option>
+                        <option value="RTG" {{ $inspection->type === 'RTG' ? 'selected' : '' }}>X-Ray</option>
                     </select>
                     @error('type')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Risk Level *</label>
+                    <select name="risk_level" class="w-full border border-gray-300 rounded px-3 py-2 text-sm @error('risk_level') border-red-500 @enderror" required>
+                        <option value="">-- Select Risk Level --</option>
+                        <option value="Low" {{ $inspection->risk_level === 'Low' ? 'selected' : '' }}>Low</option>
+                        <option value="Medium" {{ $inspection->risk_level === 'Medium' ? 'selected' : '' }}>Medium</option>
+                        <option value="High" {{ $inspection->risk_level === 'High' ? 'selected' : '' }}>High</option>
+                        <option value="Very High" {{ $inspection->risk_level === 'Very High' ? 'selected' : '' }}>Very High</option>
+                        <option value="Critical" {{ $inspection->risk_level === 'Critical' ? 'selected' : '' }}>Critical</option>
+                    </select>
+                    @error('risk_level')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -51,28 +63,29 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Decision *</label>
-                    <select name="decision" class="w-full border border-gray-300 rounded px-3 py-2 text-sm @error('decision') border-red-500 @enderror" required>
-                        <option value="approved">Approved - Clear to Proceed</option>
-                        <option value="rejected">Rejected - Goods Seized</option>
-                        <option value="pending">Pending - Further Review Required</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Decision</label>
+                    <select name="decision" class="w-full border border-gray-300 rounded px-3 py-2 text-sm @error('decision') border-red-500 @enderror">
+                        <option value="">-- No Decision --</option>
+                        <option value="released" {{ $inspection->decision === 'released' ? 'selected' : '' }}>Released</option>
+                        <option value="hold" {{ $inspection->decision === 'hold' ? 'selected' : '' }}>Hold</option>
+                        <option value="reject" {{ $inspection->decision === 'reject' ? 'selected' : '' }}>Reject</option>
                     </select>
-                    @error('decision')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Comments</label>
+                    <textarea name="comments" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" rows="2" placeholder="Add comments...">{{ old('comments', $inspection->comments) }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Justifications</label>
+                    <textarea name="justifications" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" rows="2" placeholder="Add justifications...">{{ old('justifications', $inspection->justifications) }}</textarea>
                 </div>
 
                 <div class="flex gap-2">
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                         Update Inspection
                     </button>
-                    <form action="{{ route('inspections.delete', $inspection->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this inspection?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                            Delete Inspection
-                        </button>
-                    </form>
                     <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
                         Cancel
                     </a>

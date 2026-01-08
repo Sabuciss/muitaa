@@ -16,25 +16,12 @@ class DashboardController extends Controller
     public function index()
     {
         $json = $this->fetchJson();
-        
-        $apiCases = $json['cases'] ?? [];
-        $dbCases = Cases::with(['declarant', 'consignee', 'vehicle'])->get();
-        
-        $cases = collect($apiCases)->map(function($apiCase) use ($dbCases) {
-            $dbCase = $dbCases->firstWhere('id', $apiCase['id']);
-            if ($dbCase) {
-                $apiCase['hs_code'] = $dbCase->hs_code;
-                $apiCase['declarant_name'] = $dbCase->declarant?->name;
-                $apiCase['consignee_name'] = $dbCase->consignee?->name;
-            }
-            return $apiCase;
-        })->toArray();
 
         return view('dashboard', [
-            'cases' => $cases,
+            'cases' => $json['cases'] ?? [],
             'vehicles' => $json['vehicles'] ?? [],
             'users' => $json['users'] ?? [],
-            'inspections' => $json['inspections'] ?? [],
+            'inspections' => Inspections::all()->toArray(),
             'documents' => Documents::all()->toArray(),
             'parties' => $json['parties'] ?? [],
             'totals' => $json['total'] ?? null,

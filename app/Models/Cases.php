@@ -19,7 +19,6 @@ class Cases extends Model {
         'declarant_id',
         'consignee_id',
         'vehicle_id',
-        'hs_code',
     ];
 
 

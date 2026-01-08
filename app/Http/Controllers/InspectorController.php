@@ -29,16 +29,6 @@ class InspectorController extends Controller
         return view('inspector.case', compact('case', 'inspections'));
     }
 
-    public function decision(Request $request, $id)
-    {
-        $inspection = Inspections::findOrFail($id);
-        $request->validate(['decision' => 'required|in:release,hold,reject']);
-        
-        $inspection->update(['status' => $request->decision]);
-        
-        return back()->with('status', 'Decision recorded: ' . $request->decision);
-    }
-
     public function createInspection()
     {
         return view('inspections.create');
@@ -48,7 +38,8 @@ class InspectorController extends Controller
     {
         $request->validate([
             'case_id' => 'required',
-            'type' => 'required|string',
+            'type' => 'required|in:dokumentu,fiziska,RTG',
+            'risk_level' => 'required|string|in:Low,Medium,High,Very High,Critical',
             'location' => 'nullable|string',
             'start_ts' => 'nullable|date',
             'checks' => 'nullable|string',
@@ -63,8 +54,9 @@ class InspectorController extends Controller
             'id' => 'insp-' . uniqid(),
             'case_id' => $request->case_id,
             'type' => $request->type,
+            'risk_level' => $request->risk_level,
             'location' => $request->location,
-            'start_ts' => $request->start_ts,
+            'start_ts' => $request->start_ts ?: null,
             'checks' => $checks,
             'requested_by' => auth()->user()->full_name ?? auth()->user()->name,
         ]);
@@ -81,11 +73,34 @@ class InspectorController extends Controller
     public function updateInspection(Request $request, $id)
     {
         $inspection = Inspections::findOrFail($id);
+        
         $request->validate([
             'type' => 'required|in:dokumentu,RTG,fiziska',
+            'risk_level' => 'required|string|in:Low,Medium,High,Very High,Critical',
+            'location' => 'required|string',
+            'start_ts' => 'required|date',
+            'checks' => 'nullable|string',
+            'decision' => 'nullable|in:released,hold,reject',
+            'comments' => 'nullable|string',
+            'justifications' => 'nullable|string',
         ]);
 
-        $inspection->update($request->only(['type']));
+        $checks = [];
+        if ($request->checks) {
+            $checks = array_map('trim', explode(',', $request->checks));
+        }
+
+        $inspection->update([
+            'type' => $request->type,
+            'risk_level' => $request->risk_level,
+            'location' => $request->location,
+            'start_ts' => $request->start_ts,
+            'checks' => $checks,
+            'decision' => $request->decision,
+            'comments' => $request->comments,
+            'justifications' => $request->justifications,
+        ]);
+
         return redirect()->route('dashboard')->with('status', 'Inspection updated successfully.');
     }
 
@@ -93,5 +108,25 @@ class InspectorController extends Controller
     {
         Inspections::findOrFail($id)->delete();
         return redirect()->route('dashboard')->with('status', 'Inspection deleted successfully.');
+    }
+
+    public function decision(Request $request, $id)
+    {
+        $request->validate([
+            'decision' => 'required|in:released,hold,reject',
+            'comments' => 'nullable|string',
+            'justifications' => 'nullable|string',
+        ]);
+
+        $inspection = Inspections::findOrFail($id);
+
+        $inspection->update([
+            'decision' => $request->decision,
+            'comments' => $request->comments,
+            'justifications' => $request->justifications,
+            'end_ts' => now(),
+        ]);
+
+        return redirect()->route('dashboard')->with('status', 'Inspection decision saved!');
     }
 }

@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('checkpoint_id')->nullable();
             $table->string('origin_country')->nullable();
             $table->string('destination_country')->nullable();
-            $table->string('hs_code')->nullable();
             $table->json('risk_flags')->nullable();
             $table->string('declarant_id')->nullable();
             $table->string('consignee_id')->nullable();

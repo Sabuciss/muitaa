@@ -13,7 +13,12 @@
 
                 <div class="mb-3">
                     <label class="block text-sm font-medium mb-1">Type *</label>
-                    <input type="text" name="type" class="w-full border rounded px-2 py-1 text-sm" placeholder="e.g. dokumentu, RTG, fiziska" required>
+                    <select name="type" class="w-full border rounded px-2 py-1 text-sm" required>
+                        <option value="">-- Select Type --</option>
+                        <option value="dokumentu">Document</option>
+                        <option value="fiziska">Physical</option>
+                        <option value="RTG">X-Ray</option>
+                    </select>
                 </div>
 
                 <div class="mb-3">
@@ -29,6 +34,23 @@
                 <div class="mb-3">
                     <label class="block text-sm font-medium mb-1">Checks</label>
                     <input type="text" name="checks" class="w-full border rounded px-2 py-1 text-sm" placeholder="Comma separated">
+                </div>
+
+                <div class="mb-3">
+                    <label class="block text-sm font-medium mb-1">Risk Level *</label>
+                    <select name="risk_level" class="w-full border rounded px-2 py-1 text-sm" required>
+                        <option value="">-- Select Risk Level --</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Very High">Very High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="block text-sm font-medium mb-1">Risk Flag</label>
+                    <input type="text" name="risk_flag" class="w-full border rounded px-2 py-1 text-sm" placeholder="e.g. Seized, Dangerous, Suspect">
                 </div>
 
                 <div class="flex gap-2">

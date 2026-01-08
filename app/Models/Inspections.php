@@ -20,6 +20,12 @@ class Inspections extends Model
         'location',
         'checks',
         'assigned_to',
+        'risk_level',
+        'risk_flag',
+        'decision',
+        'comments',
+        'justifications',
+        'end_ts',
     ];
 
     protected $casts = [
@@ -30,5 +36,10 @@ class Inspections extends Model
     public function case()
     {
         return $this->belongsTo(Cases::class, 'case_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'requested_by');
     }
 }

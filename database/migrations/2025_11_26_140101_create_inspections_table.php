@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->json('checks')->nullable();
             $table->string('assigned_to')->nullable();
+            $table->string('risk_level')->nullable();
+            $table->string('risk_flag')->nullable();
             $table->timestamps();
         });
     }

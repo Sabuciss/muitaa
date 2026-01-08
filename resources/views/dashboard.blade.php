@@ -34,14 +34,6 @@
                     <input type="text" id="filter-vehicle" class="w-full border px-2 py-1 rounded text-sm" placeholder="Vehicle number">
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-600 mb-1">HS Code</label>
-                    <input type="text" id="filter-hscode" class="w-full border px-2 py-1 rounded text-sm" placeholder="HS code">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-600 mb-1">Company/Party</label>
-                    <input type="text" id="filter-party" class="w-full border px-2 py-1 rounded text-sm" placeholder="Company name">
-                </div>
-                <div>
                     <label class="block text-xs text-gray-600 mb-1">Status</label>
                     <select id="filter-status" class="w-full border px-2 py-1 rounded text-sm">
                         <option value="">All</option>
@@ -175,19 +167,26 @@
                                 <th class="text-left px-2 py-1">Case</th>
                                 <th class="text-left px-2 py-1">Type</th>
                                 <th class="text-left px-2 py-1">Location</th>
+                                <th class="text-left px-2 py-1">Risk Level</th>
+                                <th class="text-left px-2 py-1">Risk Flag</th>
                                 <th class="text-left px-2 py-1">Created</th>
                                 <th class="text-left px-2 py-1">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($inspections as $i)
-                                <tr class="border-b hover:bg-gray-50">
+                                <tr class="border-b hover:bg-gray-50" id="inspection-row-{{ $i['id'] }}">
                                     <td class="px-2 py-1 font-mono text-xs">{{ substr($i['id'] ?? '', 0, 8) }}</td>
                                     <td class="px-2 py-1">{{ substr($i['case_id'] ?? '', 0, 8) }}</td>
                                     <td class="px-2 py-1"><span class="px-2 py-1 rounded text-xs bg-blue-100">{{ $i['type'] ?? 'general' }}</span></td>
                                     <td class="px-2 py-1">{{ $i['location'] ?? '-' }}</td>
-                                    <td class="px-2 py-1 text-xs">{{ substr($i['created_at'] ?? '', 0, 10) }}</td>
-                                    <td class="px-2 py-1 text-xs">
+                                    <td class="px-2 py-1 risk-level-cell" data-inspection-id="{{ $i['id'] }}">{{ $i['risk_level'] ?? '-' }}</td>
+                                    <td class="px-2 py-1">{{ $i['risk_flag'] ?? '-' }}</td>
+                                    <td class="px-2 py-1 text-xs">{{ $i['requested_by'] ?? '-' }}</td>
+                                    <td class="px-2 py-1 text-xs space-x-1">
+                                        @if($userRole === 'analyst')
+                                            <button type="button" class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs run-risk-btn" data-inspection-id="{{ $i['id'] }}" data-url="{{ route('risk.run', $i['id']) }}">Run Risk</button>
+                                        @endif
                                         @if($userRole === 'inspector')
                                             <a href="{{ route('inspections.edit', $i['id']) }}" class="text-blue-500 hover:underline">Edit</a>
                                             <form method="POST" action="{{ route('inspections.destroy', $i['id']) }}" style="display:inline;" onsubmit="return confirm('Delete this inspection?');">
@@ -201,7 +200,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="px-2 py-4 text-center text-gray-500">No inspections available</td></tr>
+                                <tr><td colspan="8" class="px-2 py-4 text-center text-gray-500">No inspections available</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -211,10 +210,20 @@
             <div id="section-documents-content">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-lg font-bold"> Documents</h2>
-                    <span class="text-xs text-gray-600">Total: {{ count($documents) }}</span>
+                    <button onclick="toggleDocFilter()" class="text-xs px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Filter</button>
+                </div>
+                <div id="doc-filter-panel" class="hidden grid grid-cols-2 gap-2 mb-3">
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Filename</label>
+                        <input type="text" id="filter-doc-filename" class="w-full border px-2 py-1 rounded text-sm" placeholder="Search filename">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Category</label>
+                        <input type="text" id="filter-doc-category" class="w-full border px-2 py-1 rounded text-sm" placeholder="Search category">
+                    </div>
                 </div>
                 <div class="overflow-x-auto mb-6">
-                    <table class="min-w-full text-sm">
+                    <table id="documents-table" class="min-w-full text-sm">
                         <thead>
                             <tr class="border-b bg-gray-50">
                                 <th class="text-left px-2 py-1">ID</th>
@@ -257,10 +266,24 @@
             <div id="section-vehicles-content">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-lg font-bold"> Vehicles</h2>
-                    <span class="text-xs text-gray-600">Total: {{ count($vehicles) }}</span>
+                    <button onclick="toggleVehFilter()" class="text-xs px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Filter</button>
+                </div>
+                <div id="veh-filter-panel" class="hidden grid grid-cols-3 gap-2 mb-3">
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Plate No</label>
+                        <input type="text" id="filter-veh-plate" class="w-full border px-2 py-1 rounded text-sm" placeholder="Search plate">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Country</label>
+                        <input type="text" id="filter-veh-country" class="w-full border px-2 py-1 rounded text-sm" placeholder="Search country">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Make</label>
+                        <input type="text" id="filter-veh-make" class="w-full border px-2 py-1 rounded text-sm" placeholder="Search make">
+                    </div>
                 </div>
                 <div class="overflow-x-auto mb-6">
-                    <table class="min-w-full text-sm">
+                    <table id="vehicles-table" class="min-w-full text-sm">
                         <thead>
                             <tr class="border-b bg-gray-50">
                                 <th class="text-left px-2 py-1">ID</th>
@@ -283,6 +306,55 @@
                                 </tr>
                             @empty
                                 <tr><td colspan="6" class="px-2 py-4 text-center text-gray-500">No vehicles available</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-parties-content">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold"> Parties</h2>
+                    <button onclick="toggleParFilter()" class="text-xs px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Filter</button>
+                </div>
+                <div id="par-filter-panel" class="hidden grid grid-cols-2 gap-2 mb-3">
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Name</label>
+                        <input type="text" id="filter-par-name" class="w-full border px-2 py-1 rounded text-sm" placeholder="Search name">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Country</label>
+                        <input type="text" id="filter-par-country" class="w-full border px-2 py-1 rounded text-sm" placeholder="Search country">
+                    </div>
+                </div>
+                <div class="overflow-x-auto mb-6">
+                    <table id="parties-table" class="min-w-full text-sm">
+                        <thead>
+                            <tr class="border-b bg-gray-50">
+                                <th class="text-left px-2 py-1">ID</th>
+                                <th class="text-left px-2 py-1">Name</th>
+                                <th class="text-left px-2 py-1">Type</th>
+                                <th class="text-left px-2 py-1">Country</th>
+                                <th class="text-left px-2 py-1">RegCode</th>
+                                <th class="text-left px-2 py-1">VAT</th>
+                                <th class="text-left px-2 py-1">Email</th>
+                                <th class="text-left px-2 py-1">Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($parties as $p)
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="px-2 py-1 font-mono text-xs">{{ substr($p['id'] ?? '', 0, 8) }}</td>
+                                    <td class="px-2 py-1">{{ $p['name'] ?? '-' }}</td>
+                                    <td class="px-2 py-1"><span class="px-2 py-1 rounded text-xs bg-purple-100">{{ $p['type'] ?? '-' }}</span></td>
+                                    <td class="px-2 py-1">{{ $p['country'] ?? '-' }}</td>
+                                    <td class="px-2 py-1 text-xs">{{ $p['reg_code'] ?? '-' }}</td>
+                                    <td class="px-2 py-1 text-xs">{{ $p['vat_code'] ?? '-' }}</td>
+                                    <td class="px-2 py-1 text-xs">{{ $p['email'] ?? '-' }}</td>
+                                    <td class="px-2 py-1 text-xs">{{ $p['phone'] ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="8" class="px-2 py-4 text-center text-gray-500">No parties available</td></tr>
                             @endforelse
                         </tbody>
                     </table>
