@@ -23,7 +23,6 @@
         showTopic(t);
     }));
 
-    // Filter panel toggle and filtering logic
     const filterToggles = document.querySelectorAll('button[data-toggle-filter]');
     filterToggles.forEach(btn => {
         const key = btn.getAttribute('data-toggle-filter');
@@ -71,14 +70,12 @@
         });
     }
 
-    // wire inputs: on input change apply filters
     const filterInputs = document.querySelectorAll('[data-filter-input]');
     filterInputs.forEach(inp => {
         const section = inp.getAttribute('data-filter-input');
         inp.addEventListener('input', () => applyFilters(section));
     });
 
-    // clear buttons
     const clearBtns = document.querySelectorAll('[data-filter-clear]');
     clearBtns.forEach(b => {
         const section = b.getAttribute('data-filter-clear');
@@ -90,3 +87,77 @@
         });
     });
 })();
+
+function applyFilters() {
+    const vehicle = document.getElementById('filter-vehicle').value.toLowerCase();
+    const hscode = document.getElementById('filter-hscode').value.toLowerCase();
+    const party = document.getElementById('filter-party').value.toLowerCase();
+    const status = document.getElementById('filter-status').value.toLowerCase();
+    const priority = document.getElementById('filter-priority').value.toLowerCase();
+    const origin = document.getElementById('filter-origin').value.toLowerCase();
+    const destination = document.getElementById('filter-destination').value.toLowerCase();
+
+    const rows = document.querySelectorAll('#cases-table tbody tr');
+    rows.forEach(row => {
+        const vehicleId = row.cells[1]?.textContent.toLowerCase() || '';
+        const hsCodeText = row.cells[2]?.textContent.toLowerCase() || '';
+        const partyText = row.cells[3]?.textContent.toLowerCase() || '';
+        const rowStatus = row.cells[4]?.textContent.toLowerCase() || '';
+        const rowPriority = row.cells[5]?.textContent.toLowerCase() || '';
+        const rowOrigin = row.cells[6]?.textContent.toLowerCase() || '';
+        const rowDestination = row.cells[7]?.textContent.toLowerCase() || '';
+  
+        const vehicleMatch = !vehicle || vehicleId.includes(vehicle);
+        const statusMatch = !status || rowStatus.includes(status);
+        const priorityMatch = !priority || rowPriority.includes(priority);
+        const originMatch = !origin || rowOrigin.includes(origin);
+        const destinationMatch = !destination || rowDestination.includes(destination);
+        const hscodeMatch = !hscode || hsCodeText.includes(hscode);
+        const partyMatch = !party || partyText.includes(party);
+
+        row.style.display = (vehicleMatch && statusMatch && priorityMatch && originMatch && destinationMatch && hscodeMatch && partyMatch) ? '' : 'none';
+    });
+}
+
+function clearFilters() {
+    document.getElementById('filter-vehicle').value = '';
+    document.getElementById('filter-hscode').value = '';
+    document.getElementById('filter-party').value = '';
+    document.getElementById('filter-status').value = '';
+    document.getElementById('filter-priority').value = '';
+    document.getElementById('filter-origin').value = '';
+    document.getElementById('filter-destination').value = '';
+    
+    const rows = document.querySelectorAll('#cases-table tbody tr');
+    rows.forEach(row => row.style.display = '');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const preferenceButtons = document.querySelectorAll('button[data-preference]');
+    
+    preferenceButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const preference = this.getAttribute('data-preference');
+
+            document.getElementById('section-documents-content').style.display = 'none';
+            document.getElementById('section-inspections-content').style.display = 'none';
+            document.getElementById('section-cases-content').style.display = 'none';
+            document.getElementById('section-vehicles-content').style.display = 'none';
+            
+            if (preference === 'all') {
+                document.getElementById('section-documents-content').style.display = '';
+                document.getElementById('section-inspections-content').style.display = '';
+                document.getElementById('section-cases-content').style.display = '';
+                document.getElementById('section-vehicles-content').style.display = '';
+            } else {
+                const sectionId = `section-${preference}-content`;
+                const section = document.getElementById(sectionId);
+                
+                if (section) {
+                    section.style.display = '';
+                }
+            }
+        });
+    });
+});

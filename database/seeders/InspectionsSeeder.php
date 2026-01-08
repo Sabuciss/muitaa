@@ -2,43 +2,41 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use App\Models\Inspections;
 use Carbon\Carbon;
 
 class InspectionsSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        $url = env('REMOTE_JSON_URL', 'https://deskplan.lv/muita/app.json');
-        $this->command->info('Seeding inspections from: ' . $url);
+        $muitaData = Http::withoutVerifying()->get('https://deskplan.lv/muita/app.json')->json();
 
-        $data = @file_get_contents($url);
-        if (!$data) {
-            $this->command->error('Failed to fetch remote JSON for inspections.');
-            return;
-        }
-
-        $json = json_decode($data, true);
-        $items = $json['inspections'] ?? [];
-        $count = 0;
-        foreach ($items as $item) {
-            if (!isset($item['id'])) continue;
-            $attrs = $item;
-            $attrs['id'] = (string) $item['id'];
-            if (isset($attrs['checks']) && is_array($attrs['checks'])) {
-                $attrs['checks'] = json_encode($attrs['checks']);
-            }
-            if (isset($attrs['start_ts']) && is_string($attrs['start_ts'])) {
+        foreach ($muitaData['inspections'] as $inspections) {
+            $startTs = null;
+            if (isset($inspections['start_ts'])) {
                 try {
-                    $attrs['start_ts'] = Carbon::parse($attrs['start_ts'])->format('Y-m-d H:i:s');
+                    $startTs = Carbon::parse($inspections['start_ts'])->format('Y-m-d H:i:s');
                 } catch (\Exception $e) {
-                    $attrs['start_ts'] = null;
+                    $startTs = null;
                 }
             }
-            DB::table('inspections')->updateOrInsert(['id' => $attrs['id']], $attrs);
-            $count++;
+
+            Inspections::create([
+                'id' => $inspections['id'],
+                'case_id' => $inspections['case_id'],
+                'type' => $inspections['type'],
+                'requested_by' => $inspections['requested_by'],
+                'start_ts' => $startTs,
+                'location' => $inspections['location'],
+                'checks' => $inspections['checks'],
+                'assigned_to' => $inspections['assigned_to'],
+            ]);
         }
-        $this->command->info("Inspections seeded: {$count}");
     }
 }

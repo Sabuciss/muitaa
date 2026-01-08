@@ -17,11 +17,11 @@ class DatabaseSeeder extends Seeder
         // Call individual seeders that sync from remote JSON.
         $this->call([
             VehiclesSeeder::class,
+            PartiesSeeder::class,
             UsersSeeder::class,
             CasesSeeder::class,
             InspectionsSeeder::class,
             DocumentsSeeder::class,
-            PartiesSeeder::class,
         ]);
     }
 }

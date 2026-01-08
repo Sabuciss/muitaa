@@ -2,32 +2,31 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use App\Models\Parties;
 
 class PartiesSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        $url = env('REMOTE_JSON_URL', 'https://deskplan.lv/muita/app.json');
-        $this->command->info('Seeding parties from: ' . $url);
+        $muitaData = Http::withoutVerifying()->get('https://deskplan.lv/muita/app.json')->json();
 
-        $data = @file_get_contents($url);
-        if (!$data) {
-            $this->command->error('Failed to fetch remote JSON for parties.');
-            return;
+        foreach ($muitaData['parties'] as $parties) {
+            Parties::create([
+                'id' => $parties['id'],
+                'type' => $parties['type'],
+                'name' => $parties['name'],
+                'reg_code' => $parties['reg_code'],
+                'vat' => $parties['vat'],
+                'country' => $parties['country'],
+                'email' => $parties['email'],
+                'phone' => $parties['phone'],
+            ]);
         }
-
-        $json = json_decode($data, true);
-        $items = $json['parties'] ?? [];
-        $count = 0;
-        foreach ($items as $item) {
-            if (!isset($item['id'])) continue;
-            $attrs = $item;
-            $attrs['id'] = (string) $item['id'];
-            DB::table('parties')->updateOrInsert(['id' => $attrs['id']], $attrs);
-            $count++;
-        }
-        $this->command->info("Parties seeded: {$count}");
     }
 }

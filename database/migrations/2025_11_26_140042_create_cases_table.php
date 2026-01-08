@@ -20,10 +20,17 @@ return new class extends Migration
             $table->string('checkpoint_id')->nullable();
             $table->string('origin_country')->nullable();
             $table->string('destination_country')->nullable();
+            $table->string('hs_code')->nullable();
             $table->json('risk_flags')->nullable();
             $table->string('declarant_id')->nullable();
             $table->string('consignee_id')->nullable();
             $table->string('vehicle_id')->nullable();
+            $table->index('declarant_id');
+            $table->index('consignee_id');
+            $table->index('vehicle_id');
+            $table->foreign('declarant_id')->references('id')->on('parties')->nullOnDelete();
+            $table->foreign('consignee_id')->references('id')->on('parties')->nullOnDelete();
+            $table->foreign('vehicle_id')->references('id')->on('vehicles')->nullOnDelete(); 
             $table->timestamps();
         });
     }

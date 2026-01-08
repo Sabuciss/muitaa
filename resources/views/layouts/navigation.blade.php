@@ -18,12 +18,21 @@
                 </div>
             </div>
 
-            <!-- Pagaidām tikai statisks teksts -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <span class="text-sm text-gray-500 dark:text-gray-400">
-                    Guest
-                </span>
-            </div>
+            @auth
+                <div class="hidden sm:flex sm:items-center sm:ms-6 gap-4">
+                    <div class="text-sm">
+                        <div class="font-medium text-gray-700 dark:text-gray-300">
+                            {{ auth()->user()->full_name ?? auth()->user()->username }}
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="text-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                            Log Out
+                        </button>
+                    </form>
+                </div>
+            @endauth
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
@@ -57,19 +66,27 @@
         </div>
 
         <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800 dark:text-gray-200">
-                    Guest
+        @auth
+            <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
+                <div class="px-4">
+                    <div class="font-medium text-base text-gray-800 dark:text-gray-200">
+                        {{ auth()->user()->full_name ?? auth()->user()->username }}
+                    </div>
+                    <div class="font-medium text-sm text-gray-500">
+                        {{ auth()->user()->email ?? auth()->user()->username }}
+                    </div>
                 </div>
-                <div class="font-medium text-sm text-gray-500">
-                    guest@example.com
-                </div>
-            </div>
 
-            <div class="mt-3 space-y-1">
-                <!-- Te nākotnē var likt Profile / Logout -->
+                <div class="mt-3 space-y-1">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <x-responsive-nav-link :href="route('logout')"
+                                onclick="event.preventDefault(); this.closest('form').submit();">
+                            {{ __('Log Out') }}
+                        </x-responsive-nav-link>
+                    </form>
+                </div>
             </div>
-        </div>
+        @endauth
     </div>
 </nav>

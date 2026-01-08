@@ -42,19 +42,18 @@
             </div>
         @endif
 
-        <!-- Quick topic links-->
-        <div class="bg-white rounded shadow p-4">
+        <div class="bg-white rounded shadow p-4 sticky top-0 z-10">
+            <h3 class="text-sm font-semibold mb-3">Select Table to View</h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 items-center">
-                <button type="button" data-target="vehicles" class="w-full py-2 bg-white text-gray-700 border rounded-md transition transform hover:scale-105 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-purple-300">Vehicles</button>
-                <button type="button" data-target="inspections" class="w-full py-2 bg-white text-gray-700 border rounded-md transition transform hover:scale-105 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-green-400 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-green-200">Inspections</button>
-                <button type="button" data-target="documents" class="w-full py-2 bg-white text-gray-700 border rounded-md transition transform hover:scale-105 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-200">Documents</button>
-                <button type="button" data-target="users" class="w-full py-2 bg-white text-gray-700 border rounded-md transition transform hover:scale-105 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-yellow-400 hover:to-orange-500 focus:outline-none focus:ring-2 focus:ring-yellow-200">Users</button>
-                <button type="button" data-target="cases" class="w-full py-2 bg-white text-gray-700 border rounded-md transition transform hover:scale-105 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-pink-400 hover:to-red-500 focus:outline-none focus:ring-2 focus:ring-pink-200">Cases</button>
-                <button type="button" data-target="all" class="w-full py-2 bg-white text-gray-700 border rounded-md transition transform duration-200 hover:scale-105 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400">Show all</button>
+                <a href="{{ route('welcome') }}" class="w-full py-2 text-center text-sm rounded-md @if($activeTable === 'all') bg-gray-800 text-white @else bg-white text-gray-700 border hover:bg-gray-100 @endif">All Tables</a>
+                <a href="{{ route('welcome', ['table' => 'vehicles']) }}" class="w-full py-2 text-center text-sm rounded-md @if($activeTable === 'vehicles') bg-purple-500 text-white @else bg-white text-gray-700 border hover:bg-purple-100 @endif">Vehicles</a>
+                <a href="{{ route('welcome', ['table' => 'inspections']) }}" class="w-full py-2 text-center text-sm rounded-md @if($activeTable === 'inspections') bg-green-500 text-white @else bg-white text-gray-700 border hover:bg-green-100 @endif">Inspections</a>
+                <a href="{{ route('welcome', ['table' => 'documents']) }}" class="w-full py-2 text-center text-sm rounded-md @if($activeTable === 'documents') bg-blue-500 text-white @else bg-white text-gray-700 border hover:bg-blue-100 @endif">Documents</a>
+                <a href="{{ route('welcome', ['table' => 'users']) }}" class="w-full py-2 text-center text-sm rounded-md @if($activeTable === 'users') bg-yellow-500 text-white @else bg-white text-gray-700 border hover:bg-yellow-100 @endif">Users</a>
+                <a href="{{ route('welcome', ['table' => 'cases']) }}" class="w-full py-2 text-center text-sm rounded-md @if($activeTable === 'cases') bg-pink-500 text-white @else bg-white text-gray-700 border hover:bg-pink-100 @endif">Cases</a>
             </div>
         </div>
 
-        <!-- Vehicles tabula -->
         <div id="section-vehicles" data-topic="vehicles" class="bg-white rounded shadow p-4">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-bold">Vehicles</h2>
@@ -103,7 +102,6 @@
             </div>
         </div>
 
-        <!-- Users tabula -->
         <div id="section-users" data-topic="users" class="bg-white rounded shadow p-4">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-bold">Users</h2>
@@ -150,7 +148,6 @@
             </div>
         </div>
 
-        <!-- Cases tabula -->
         <div id="section-cases" data-topic="cases" class="bg-white rounded shadow p-4">
             <h2 class="text-lg font-bold mb-3">Cases</h2>
             <div class="overflow-x-auto">
@@ -190,7 +187,6 @@
             </div>
         </div>
 
-        <!-- Inspections tabula -->
         <div id="section-inspections" data-topic="inspections" class="bg-white rounded shadow p-4">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-bold">Inspections</h2>
@@ -247,7 +243,6 @@
             </div>
         </div>
 
-        <!-- Documents tabula -->
         <div id="section-documents" data-topic="documents" class="bg-white rounded shadow p-4">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-bold">Documents</h2>
@@ -296,7 +291,6 @@
             </div>
         </div>
 
-        <!-- Parties tabula -->
         <div id="section-parties" data-topic="parties" class="bg-white rounded shadow p-4">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-bold">Parties</h2>
@@ -346,5 +340,5 @@
         </div>
 
     </div>
-    <script src="dashboard.js" defer></script>
+    <script src="{{ asset('dashboard.js') }}" defer></script>
 </x-app-layout>

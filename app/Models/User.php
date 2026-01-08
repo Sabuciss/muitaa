@@ -15,24 +15,22 @@ class User extends Authenticatable
 
     
     protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-        protected $fillable = [
-            'id',
-            'username',
-            'full_name',
-            'name',
-            'email',
-            'password',
-            'role',
-            'active',
-        ];
+    protected $fillable = [
+        'api_id',
+        'username',
+        'full_name',
+        'role',
+        'password',
+        'active',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.

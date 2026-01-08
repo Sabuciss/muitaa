@@ -17,7 +17,7 @@ class VehiclesController extends Controller
         public function updateVehiclesFromJson($jsonData)
     {
         foreach ($jsonData['vehicles'] as $vehicle) {
-            \App\Models\Vehicle::updateOrCreate(
+            Vehicle::updateOrCreate(
                 ['id' => $vehicle['id']],
                 [
                     'plate_no' => $vehicle['plate_no'],

@@ -2,32 +2,30 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use App\Models\Documents;
 
 class DocumentsSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        $url = env('REMOTE_JSON_URL', 'https://deskplan.lv/muita/app.json');
-        $this->command->info('Seeding documents from: ' . $url);
+        $muitaData = Http::withoutVerifying()->get('https://deskplan.lv/muita/app.json')->json();
 
-        $data = @file_get_contents($url);
-        if (!$data) {
-            $this->command->error('Failed to fetch remote JSON for documents.');
-            return;
+        foreach ($muitaData['documents'] as $documents) {
+            Documents::create([
+                'id' => $documents['id'],
+                'case_id' => $documents['case_id'],
+                'filename' => $documents['filename'],
+                'mime_type' => $documents['mime_type'],
+                'category' => $documents['category'],
+                'pages' => $documents['pages'],
+                'uploaded_by' => $documents['uploaded_by'],
+            ]);
         }
-
-        $json = json_decode($data, true);
-        $items = $json['documents'] ?? [];
-        $count = 0;
-        foreach ($items as $item) {
-            if (!isset($item['id'])) continue;
-            $attrs = $item;
-            $attrs['id'] = (string) $item['id'];
-            DB::table('documents')->updateOrInsert(['id' => $attrs['id']], $attrs);
-            $count++;
-        }
-        $this->command->info("Documents seeded: {$count}");
     }
 }

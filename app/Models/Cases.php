@@ -6,11 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cases extends Model {
    
-    protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-   
     protected $fillable = [
         'id',
         'external_ref',
@@ -24,6 +19,7 @@ class Cases extends Model {
         'declarant_id',
         'consignee_id',
         'vehicle_id',
+        'hs_code',
     ];
 
 
@@ -35,20 +31,20 @@ class Cases extends Model {
         return $this->belongsTo(Vehicles::class, 'vehicle_id');
     }
 
-    public function inspections() {
-        return $this->hasMany(Inspections::class, 'case_id');
-    }
-
-    public function documents() {
-        return $this->hasMany(Documents::class, 'case_id');
-    }
-
     public function declarant() {
         return $this->belongsTo(Parties::class, 'declarant_id');
     }
 
     public function consignee() {
         return $this->belongsTo(Parties::class, 'consignee_id');
+    }
+
+    public function inspections() {
+        return $this->hasMany(Inspections::class, 'case_id');
+    }
+
+    public function documents() {
+        return $this->hasMany(Documents::class, 'case_id');
     }
 }
 

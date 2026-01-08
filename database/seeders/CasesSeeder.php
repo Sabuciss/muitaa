@@ -2,35 +2,35 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use App\Models\Cases;
 
 class CasesSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        $url = env('REMOTE_JSON_URL', 'https://deskplan.lv/muita/app.json');
-        $this->command->info('Seeding cases from: ' . $url);
+        $muitaData = Http::withoutVerifying()->get('https://deskplan.lv/muita/app.json')->json();
 
-        $data = @file_get_contents($url);
-        if (!$data) {
-            $this->command->error('Failed to fetch remote JSON for cases.');
-            return;
+        foreach ($muitaData['cases'] as $cases) {
+            Cases::create([
+                'id' => $cases['id'],
+                'external_ref' => $cases['external_ref'],
+                'status' => $cases['status'],
+                'priority' => $cases['priority'],
+                'arrival_ts' => $cases['arrival_ts'],
+                'checkpoint_id' => $cases['checkpoint_id'],
+                'origin_country' => $cases['origin_country'],
+                'destination_country' => $cases['destination_country'],
+                'risk_flags' => $cases['risk_flags'],
+                'declarant_id' => $cases['declarant_id'],
+                'consignee_id' => $cases['consignee_id'],
+                'vehicle_id' => $cases['vehicle_id'],
+            ]);
         }
-
-        $json = json_decode($data, true);
-        $items = $json['cases'] ?? [];
-        $count = 0;
-        foreach ($items as $item) {
-            if (!isset($item['id'])) continue;
-            $attrs = $item;
-            $attrs['id'] = (string) $item['id'];
-            if (isset($attrs['risk_flags']) && is_array($attrs['risk_flags'])) {
-                $attrs['risk_flags'] = json_encode($attrs['risk_flags']);
-            }
-            DB::table('cases')->updateOrInsert(['id' => $attrs['id']], $attrs);
-            $count++;
-        }
-        $this->command->info("Cases seeded: {$count}");
     }
 }
