@@ -9,111 +9,92 @@ use Illuminate\Http\Request;
 
 class AnalystController extends Controller
 {
+    private $riskMapping = [
+        'Low' => 1,
+        'Medium' => 2,
+        'High' => 3,
+        'Very High' => 4,
+        'Critical' => 5,
+    ];
+
+    private $highRiskRoutes = ['CN', 'IN', 'PK', 'AF'];
+
     public function index()
     {
         $json = json_decode(file_get_contents('https://deskplan.lv/muita/app.json'), true);
-        $cases = $json['cases'] ?? [];
         
         return view('analyst.dashboard', [
-            'cases' => $cases,
+            'cases' => $json['cases'] ?? [],
             'totals' => $json['total'] ?? null,
         ]);
+    }
+
+    private function calculateRisk($inspection, $case)
+    {
+        if ($inspection->risk_level) {
+            return $this->riskMapping[$inspection->risk_level] ?? 2;
+        }
+
+        if (!$case) return 2;
+
+        $risk = 2;
+        $risk += ($case->priority === 'high') ? 1 : 0;
+        $risk += ($case->status === 'detained') ? 1 : 0;
+        $risk += (in_array($case->origin_country, $this->highRiskRoutes) || in_array($case->destination_country, $this->highRiskRoutes)) ? 1 : 0;
+        $risk += ($inspection->type === 'RTG') ? 1 : 0;
+
+        return min($risk, 5);
+    }
+
+    private function generateRiskFlags($inspection, $case, $calculatedRisk)
+    {
+        $flags = [];
+
+        if ($inspection->type === 'RTG') {
+            $flags[] = 'RTG skenēšana nepieciešama';
+        }
+        if ($inspection->type === 'fiziska') {
+            $flags[] = 'Fiziska pārbaude';
+        }
+
+        if ($case) {
+            if ($case->priority === 'high') {
+                $flags[] = 'Augsta prioritāte - Paaugstināta uzraudzība';
+            }
+            if ($case->status === 'detained') {
+                $flags[] = 'Noliktava - Aizturēta sūtījuma analīze';
+            }
+            if (in_array($case->origin_country, $this->highRiskRoutes)) {
+                $flags[] = 'Riskanta izcelšanās valsts: ' . $case->origin_country;
+            }
+            if (in_array($case->destination_country, $this->highRiskRoutes)) {
+                $flags[] = 'Riskanta galapunkta valsts: ' . $case->destination_country;
+            }
+        }
+
+        if (empty($flags)) {
+            $riskLevel = array_search($calculatedRisk, $this->riskMapping, true) ?: 'Medium';
+            $flags[] = 'Automatizēts risks: ' . $riskLevel;
+        }
+
+        return implode('; ', $flags);
     }
 
     public function runRisk($id)
     {
         $inspection = Inspections::findOrFail($id);
         $case = Cases::find($inspection->case_id);
-        
-        $riskMapping = [
-            'Low' => 1,
-            'Medium' => 2,
-            'High' => 3,
-            'Very High' => 4,
-            'Critical' => 5,
-        ];
-        
-        // Intelligently calculate risk level based on inspection data
-        $calculatedRisk = 2; // Default to Medium
-        
-        if ($inspection->risk_level) {
-            // Use selected risk level
-            $calculatedRisk = $riskMapping[$inspection->risk_level] ?? 2;
-        } else if ($case) {
-            // Calculate based on case details if no risk_level set
-            $baseRisk = 2;
-            
-            // High priority increases risk
-            if ($case->priority === 'high') {
-                $baseRisk += 1;
-            }
-            
-            // Detained status increases risk
-            if ($case->status === 'detained') {
-                $baseRisk += 1;
-            }
-            
-            // High-risk routes increase risk
-            $highRiskRoutes = ['CN', 'IN', 'PK', 'AF'];
-            if (in_array($case->origin_country, $highRiskRoutes) || in_array($case->destination_country, $highRiskRoutes)) {
-                $baseRisk += 1;
-            }
-            
-            // RTG inspection increases risk
-            if ($inspection->type === 'RTG') {
-                $baseRisk += 1;
-            }
-            
-            $calculatedRisk = min($baseRisk, 5); // Cap at 5
-        }
-        
-        // Get risk level text
-        $riskLevel = $inspection->risk_level ?? array_search($calculatedRisk, $riskMapping, true) ?: 'Medium';
-        
-        // Generate risk flag based on inspection data and case details
-        $riskFlags = [];
-        
-        if ($inspection->type === 'RTG') {
-            $riskFlags[] = 'RTG skenēšana nepieciešama';
-        }
-        
-        if ($inspection->type === 'fiziska') {
-            $riskFlags[] = 'Fiziska pārbaude';
-        }
-        
-        if ($case) {
-            if ($case->priority === 'high') {
-                $riskFlags[] = 'Augsta prioritāte - Paaugstināta uzraudzība';
-            }
-            
-            if ($case->status === 'detained') {
-                $riskFlags[] = 'Noliktava - Aizturēta sūtījuma analīze';
-            }
-            
-            // Check for high-risk routes
-            $highRiskRoutes = ['CN', 'IN', 'PK', 'AF'];
-            if (in_array($case->origin_country, $highRiskRoutes)) {
-                $riskFlags[] = 'Riskanta izcelšanās valsts: ' . $case->origin_country;
-            }
-            if (in_array($case->destination_country, $highRiskRoutes)) {
-                $riskFlags[] = 'Riskanta galapunkta valsts: ' . $case->destination_country;
-            }
-        }
-        
-        // If no specific flags, generate generic flag based on risk level
-        if (empty($riskFlags)) {
-            $riskFlags[] = 'Automatizēts risks: ' . $riskLevel;
-        }
-        
-        $riskFlagText = implode('; ', $riskFlags);
-        
-        // Update inspection with risk level and flag if not already set
+
+        $calculatedRisk = $this->calculateRisk($inspection, $case);
+        $riskLevel = $inspection->risk_level ?? array_search($calculatedRisk, $this->riskMapping, true) ?: 'Medium';
+        $riskFlagText = $this->generateRiskFlags($inspection, $case, $calculatedRisk);
+
         $updateData = ['risk_flag' => $riskFlagText];
         if (!$inspection->risk_level) {
             $updateData['risk_level'] = $riskLevel;
         }
         $inspection->update($updateData);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Riska analīze pabeigta.',
@@ -125,7 +106,6 @@ class AnalystController extends Controller
 
     public function runAllRisk()
     {
-        // Run risk analysis for all cases
         return back()->with('status', 'Risk analysis completed for all cases');
     }
 
@@ -154,7 +134,6 @@ class AnalystController extends Controller
 
     public function editAnalysis($id)
     {
-        // In a real app, you'd fetch from database
         return view('analysis.edit', ['analysis' => ['id' => $id]]);
     }
 

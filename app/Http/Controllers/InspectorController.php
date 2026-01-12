@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class InspectorController extends Controller
 {
+    private function parseChecks($checksString)
+    {
+        if (!$checksString) return [];
+        return array_map('trim', explode(',', $checksString));
+    }
     public function index()
     {
         $json = json_decode(file_get_contents('https://deskplan.lv/muita/app.json'), true);
@@ -45,11 +50,6 @@ class InspectorController extends Controller
             'checks' => 'nullable|string',
         ]);
 
-        $checks = [];
-        if ($request->checks) {
-            $checks = array_map('trim', explode(',', $request->checks));
-        }
-
         Inspections::create([
             'id' => 'insp-' . uniqid(),
             'case_id' => $request->case_id,
@@ -57,7 +57,7 @@ class InspectorController extends Controller
             'risk_level' => $request->risk_level,
             'location' => $request->location,
             'start_ts' => $request->start_ts ?: null,
-            'checks' => $checks,
+            'checks' => $this->parseChecks($request->checks),
             'requested_by' => auth()->user()->full_name ?? auth()->user()->name,
         ]);
 
@@ -85,17 +85,12 @@ class InspectorController extends Controller
             'justifications' => 'nullable|string',
         ]);
 
-        $checks = [];
-        if ($request->checks) {
-            $checks = array_map('trim', explode(',', $request->checks));
-        }
-
         $inspection->update([
             'type' => $request->type,
             'risk_level' => $request->risk_level,
             'location' => $request->location,
             'start_ts' => $request->start_ts,
-            'checks' => $checks,
+            'checks' => $this->parseChecks($request->checks),
             'decision' => $request->decision,
             'comments' => $request->comments,
             'justifications' => $request->justifications,
